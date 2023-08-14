@@ -15,65 +15,84 @@
  */
 
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlBundlerPlugin = require('html-bundler-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: './src/index.ts',
   module: {
     rules: [
       {
         test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.html$/,
-        loader: 'html-loader'
+        exclude: /node_modules/,
       },
       {
         test: /\.css$/,
         use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader'
-        ]
+          'css-loader',
+        ],
+      },
+      // the bundler plugin allows webpack to copy the mainifest file
+      // specified in the HTML from assets/ dir to dist/
+      {
+        test: /\.webmanifest$/,
+        type: 'asset/resource',
+        generator: {
+          filename: '[name][ext]',
+        },
       },
     ],
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: 'src/index.html'
+    new HtmlBundlerPlugin({
+      entry: {
+        // define templates here
+        index: 'src/index.html',
+      },
+      js: {
+        // output filename of compiled JavaScript, used if inline is false
+        filename: 'js/[name].[contenthash:8].js',
+        inline: true, // inlines compiled JS into HTML using the <script> tag
+      },
+      css: {
+        // output filename of extracted CSS, used if inline is false
+        filename: 'css/[name].[contenthash:8].css',
+        inline: true, // inlines CSS into HTML using the <style> tag
+      },
     }),
-    new MiniCssExtractPlugin(),
     new CopyPlugin({
       patterns: [
-        { from: "assets" },
-      ]
+        // copy only images defined in the webmanifest file
+        {from: 'assets/images', to: 'images'},
+      ],
     }),
   ],
   resolve: {
-    extensions: [ '.ts', '.js' ]
+    extensions: ['.ts', '.js'],
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
     publicPath: './',
     trustedTypes: {
       policyName: 'telnet#webpack',
-    }
+    },
   },
-  optimization: {
-    runtimeChunk: 'single',
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
-    }
-  }
+
+  // this settings generate from one `src/index.ts` file many compiled files:
+  // mani.js, runtime.js, vendors.js
+  // note: if you will inline JS into HTML, the splitShunks option has no seanse
+  // optimization: {
+  //   runtimeChunk: 'single',
+  //   splitChunks: {
+  //     cacheGroups: {
+  //       vendor: {
+  //         test: /[\\/]node_modules[\\/]/,
+  //         name: 'vendors',
+  //         chunks: 'all'
+  //       }
+  //     }
+  //   }
+  // }
 };
