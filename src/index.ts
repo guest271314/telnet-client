@@ -16,8 +16,10 @@
 
 import {Terminal} from 'xterm';
 import {FitAddon} from 'xterm-addon-fit';
-import 'xterm/css/xterm.css';
-import './style.css';
+
+// you can specify the source style files directly in HTML
+// import 'xterm/css/xterm.css';
+// import './style.css';
 
 let hostInput: HTMLInputElement;
 let portInput: HTMLInputElement;
