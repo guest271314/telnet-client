@@ -53,8 +53,8 @@ module.exports = {
       },
       js: {
         // output filename of compiled JavaScript, used if inline is false
-        filename: 'js/[name].[contenthash:8].js',
-        inline: true, // inlines compiled JS into HTML using the <script> tag
+        filename: 'sw.js',
+        inline: false, // inlines compiled JS into HTML using the <script> tag
       },
       css: {
         // output filename of extracted CSS, used if inline is false
