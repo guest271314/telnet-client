@@ -162,7 +162,7 @@ var writer = writable.getWriter();
 writer.closed.then(() => console.log('writer closed'))
   .catch(() => console.log('writer closed error'));
 
-await writer.write(enc('yo'));
+await writer.write(enc('live'));
 // For responses to be discrete when reading
 await new Promise((r) => setTimeout(r, 20));
 
@@ -190,7 +190,100 @@ for (let char of 'abcdefghijklmnopqrstuvwxyz') {
 }
 ```
 
-or load the unpacked browser extension in `direct-sockets` directory and run `direct-socket-controller.js` in DevTols `console` or Snippets on any Web page.
+Or load the unpacked browser extension in `direct-sockets` directory and run `direct-socket-controller.js` in DevTols `console` or Snippets on any arbitrary Web page.
+
+```
+var encoder = new TextEncoder();
+var decoder = new TextDecoder();
+var {resolve, reject, promise} = Promise.withResolvers();
+await navigator.permissions.request({
+  name: "notifications",
+});
+new Notification("Open IWA, connect to TCP server?").onclick = async()=>{
+  resolve(showSaveFilePicker({
+    startIn: "downloads",
+    suggestedName: "direct-socket-controller.sdp",
+  }));
+}
+;
+var handle = await promise;
+var fso = new FileSystemObserver(async([{changedHandle, root, type}],record)=>{
+  try {
+    console.log(type);
+    fso.disconnect();
+    fso.unobserve(handle);
+    var text = atob(await (await handle.getFile()).text());
+    await local.setRemoteDescription({
+      type: "answer",
+      sdp: text,
+    });
+
+    await handle.remove();
+  } catch (e) {
+    console.warn(e);
+  }
+}
+,);
+
+fso.observe(handle);
+
+var local = new RTCPeerConnection({
+  sdpSemantics: "unified-plan",
+});
+["onsignalingstatechange", "oniceconnectionstatechange", "onicegatheringstatechange", ].forEach((e)=>local.addEventListener(e, console.log));
+
+local.onicecandidate = async(e)=>{
+  if (!e.candidate) {
+    local.localDescription.sdp = local.localDescription.sdp.replace(/actpass/, "active", );
+    if (local.localDescription.sdp.indexOf("a=end-of-candidates") === -1) {
+      local.localDescription.sdp += "a=end-of-candidates\r\n";
+    }
+    try {
+      console.log("sdp:", local.localDescription);
+      var w = open(`isolated-app://<ID>?sdp=${btoa(local.localDescription.sdp)}`, );
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+;
+var channel = local.createDataChannel("transfer", {
+  negotiated: true,
+  ordered: true,
+  id: 0,
+  binaryType: "arraybuffer",
+  protocol: "tcp",
+});
+
+channel.onopen = async(e)=>{
+  console.log(e.type);
+}
+;
+channel.onclose = async(e)=>{
+  console.log(e.type);
+}
+;
+channel.onclosing = async(e)=>{
+  console.log(e.type);
+}
+;
+channel.onmessage = async(e)=>{
+  // Do stuff with data
+  console.log(e.data);
+}
+;
+
+var offer = await local.createOffer({
+  voiceActivityDetection: false,
+});
+local.setLocalDescription(offer);
+```
+
+then
+
+```
+channel.send(encoder.encode("live")); // "LIVE" in channel.onmessage handler
+```
 
 The calling Web page will create a WebRTC Data Channel, and pass the SDP to the Isolated Web App in a new `window` using `open()`, then exchange SDP with a WebRTC Data Channel in the Isolated Web App to facilitate bi-directional communication between the arbitrary Web page and the IWA where a `TCPSocket` communicates with a local (or remote) TCP server.
 
