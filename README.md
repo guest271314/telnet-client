@@ -194,6 +194,6 @@ or load the unpacked browser extension in `direct-sockets` directory and run `di
 
 The calling Web page will create a WebRTC Data Channel, and pass the SDP to the Isolated Web App in a new `window` using `open()`, then exchange SDP with a WebRTC Data Channel in the Isolated Web App to facilitate bi-directional communication between the arbitrary Web page and the IWA where a `TCPSocket` communicates with a local (or remote) TCP server.
 
-The `direct-sockets` browser extension starts one of the above local TCP servers specified in `nm_tcpsocket.json` using Native Messaging (see [NativeMessagingHosts](test/bun_echo_tcp.js test/deno_echo_tcp.js test/node_echo_tcp.js test/txikijs_echo_tcp.js) for how to install the host) when the IWA `window` is created.
+The `direct-sockets` browser extension starts one of the above local TCP servers specified in `nm_tcpsocket.json` using Native Messaging (see [NativeMessagingHosts](https://github.com/guest271314/MativeMessagingHosts) for how to install the host) when the IWA `window` is created.
 
 [Direct Sockets API]: https://wicg.github.io/direct-sockets/
