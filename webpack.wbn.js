@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
+const WebBundlePlugin = require("webbundle-webpack-plugin");
+const { WebBundleId, parsePemKey } = require("wbn-sign");
 const { merge } = require("webpack-merge");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
-
-const WebBundlePlugin = require("webbundle-webpack-plugin");
-const { WebBundleId, parsePemKey } = require("wbn-sign");
 const fs = require("fs");
 const path = require("path");
 
@@ -51,29 +50,22 @@ if (privateKey) {
   });
 }
 
-module.exports = merge({
+module.exports = {
   entry: "./src/index.js",
   module: {
     rules: [
-      /*
-      {
-        test: /\.ts$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      },
-      */
       {
         test: /\.html$/,
         loader: "html-loader",
       },
     ],
   },
+  mode: "production",
   plugins: [
-    // new CleanWebpackPlugin(),
+    webBundlePlugin,
     new HtmlWebpackPlugin({
       template: "src/index.html",
     }),
-    // new MiniCssExtractPlugin(),
     new CopyPlugin({
       patterns: [
         { from: "assets" },
@@ -90,21 +82,4 @@ module.exports = merge({
       policyName: "telnet#webpack",
     },
   },
-  optimization: {
-    runtimeChunk: "single",
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: "vendors",
-          chunks: "all",
-        },
-      },
-    },
-  },
-}, {
-  mode: "production",
-  plugins: [
-    webBundlePlugin,
-  ],
-});
+};
