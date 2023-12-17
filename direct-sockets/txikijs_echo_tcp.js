@@ -2,7 +2,11 @@
 // https://github.com/saghul/txiki.js/blob/8460eaedd13225dc2ea6761a8cca7bfd2f06f6b0/tests/test-tcp.js
 // https://github.com/saghul/txiki.js/blob/8460eaedd13225dc2ea6761a8cca7bfd2f06f6b0/tests/test-web-streams.js
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+
+const abortable = new AbortController();
+const {
+  signal,
+} = abortable;
 
 async function readFullAsync(length) {
   const buffer = new Uint8Array(65536);
@@ -52,22 +56,24 @@ try {
   const conn = await listener.accept();
   const writer = conn.writable.getWriter();
 
-  await conn.readable.pipeTo(
-    new WritableStream({
-      async write(value, controller) {
-        const data = decoder.decode(value);
-        await writer.write(encoder.encode(data.toUpperCase()));
-      },
-      close() {
-        sendMessage(encodeMessage("Stream closed"));
-      },
-      abort(reason) {
-        sendMesage(encodeMessage(reason));
-      },
-    }),
-  ).then(() => sendMessage(encodeMessage("Stream aborted"))).catch((e) => {
-    throw e;
-  });
+  await conn.readable.pipeThrough(new TextDecoderStream(), {
+    signal,
+  })
+    .pipeTo(
+      new WritableStream({
+        async write(value, controller) {
+          await writer.write(encoder.encode(value.toUpperCase()));
+        },
+        close() {
+          sendMessage(encodeMessage("Stream closed"));
+        },
+        abort(reason) {
+          sendMesage(encodeMessage(reason));
+        },
+      }),
+    ).then(() => sendMessage(encodeMessage("Stream aborted"))).catch((e) => {
+      throw e;
+    });
 } catch (e) {
   sendMesage(encodeMessage(e.message));
   listener.close();
@@ -87,3 +93,4 @@ async function main() {
 }
 
 main();
+
