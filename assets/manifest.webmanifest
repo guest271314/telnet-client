@@ -24,7 +24,7 @@
     }
   ],
   "start_url": "/",
-  "display": "standalone",
+  "display": "minimal-ui",
   "scope": "/",
   "permissions_policy": {
     "cross-origin-isolated": ["self"],
