@@ -1,4 +1,3 @@
-// Define Buffer for Deno when wbn-bundle.js is built with bun build
 globalThis.Buffer ??= (await import("node:buffer")).Buffer;
 import bundleIsolatedWebApp from "./wbn-bundle.js";
 import { WebBundleId } from "wbn-sign-webcrypto";
@@ -9,13 +8,25 @@ const { webcrypto } = crypto;
 const algorithm = { name: "Ed25519" };
 const decoder = new TextDecoder();
 const script = fs.readFileSync("./direct-sockets/direct-socket-controller.js");
-
+const privateKey = fs.readFileSync("./privateKey.json");
+const publicKey = fs.readFileSync("./publicKey.json");
 // https://github.com/tQsW/webcrypto-curve25519/blob/master/explainer.md
-const cryptoKey = await webcrypto.subtle.generateKey(
-  algorithm.name,
-  true, /* extractable */
-  ["sign", "verify"],
-);
+const cryptoKey = {
+  privateKey: await webcrypto.subtle.importKey(
+    "jwk",
+    JSON.parse(decoder.decode(privateKey)),
+    algorithm.name,
+    true,
+    ["sign"],
+  ),
+  publicKey: await webcrypto.subtle.importKey(
+    "jwk",
+    JSON.parse(decoder.decode(publicKey)),
+    algorithm.name,
+    true,
+    ["verify"],
+  ),
+};
 
 const isolatedWebAppURL = await new WebBundleId(
     cryptoKey.publicKey,
