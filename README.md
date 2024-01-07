@@ -1,292 +1,119 @@
-# Telnet Demo
+## Synposis
 
-This repository contains an
-[Isolated Web App](https://github.com/WICG/isolated-web-apps/blob/main/README.md)
-that allows the user to connect to a TCP/IP server through an interactive
-terminal. In other words, a Telnet client. This provides a demonstration of
-the [Direct Sockets API].
+Dynamically create an [Isolated Web App](https://github.com/WICG/isolated-web-apps/blob/main/README.md) to use [Direct Sockets API](https://wicg.github.io/direct-sockets/).
 
-## Privacy
-
-This application is served statically and is cached for offline use. No
-analytics are collected. All communication is directly between the client and
-the remote server specified by the user.
+- Use Web Cryptography API
+- Run same JavaScript source code in different JavaScript runtimes, e.g., `node`, `deno`, `bun`
+- TODO: Create Signed Web Bundle and Isolated Web App in the browser
 
 ## Building
 
-This project is written in TypeScript and uses npm or `bun` and Webpack to manage
-dependencies and automate the build process. To get started clone the
-repository and install dependencies by running,
+### Fetch dependencies
 
-```sh
+Creates a `node_modules` folder containing dependencies
+
+```
+bun install
+```
+
+or 
+
+```
 npm install
 ```
 
 or 
 
-```sh
-bun install
+```
+deno run -A deno_install.js
 ```
 
-Chrome supports two options for Isolated Web App development. In "proxy" mode
-you run a local development server as you would for normal web app development
-on a URL like `http://localhost:8080`. When the app is installed a random
-`isolated-app://` origin is created and the browser proxies requests for this
-origin to your local server. This allows you to quickly edit and refresh the
-app to see your changes. When developer mode is enabled Chrome also allows you
-to self-sign a Web Bundle and load it as it would be for a production app.
+### Build the Signed Web Bundle and Isolated Web App
 
-These instructions have been tested on Chrome 110.0.5464.2. When developing an
-Isolated Web App always make sure you are running the latest version of Chrome
-dev-channel as the feature is under active development.
 
-### Running with a local development server
+Entry point is `assets` directory; contains `manifest.webmanifest`, `index.html`, `script.js` and any other scripts or resources to be bundled. 
 
-To start a local development server install `webpack-dev-server` then run,
+Write `signed.swbn` to current directory, and write the generated Signed Web Bundle `isolated-app:` ID to `direct-socket-controller.js` in `direct-sockets` extension folder.
 
-```sh
-npm run start
+Node.js 
+```
+node --experimental-default-type=module index.js
 ```
 
-or
-
-```sh
-bun run start
+Bun
+```
+bun run index.js
 ```
 
-The server is listening on `http://localhost:8080`. The next step is to launch
-Chrome to install the app in "proxy" mode,
-
-```sh
-google-chrome-unstable --enable-features=IsolatedWebApps,IsolatedWebAppDevMode \
-                       --install-isolated-web-app-from-url=http://localhost:8080
+Deno
+```
+deno run --unstable-byonm -A index.js
 ```
 
-If you visit `chrome://apps` you will see a new app called "Telnet".
 
-After installation you can remove the `--install-isolated-web-app-from-url`
-parameter from the command line.
-
-Note that flags must be provided on the command line when the browser first
-starts. Once it is running launching it from the command line will open a new
-window but command line flags will not take effect.
-
-Webpack's automatic reloading will not work because it does not support Trusted
-Types.
-
-### Building a Signed Web Bundle
-
-Signing a Web Bundle requires generating a private key. This only needs to be
-done once,
-
-```sh
-openssl genpkey -algorithm ed25519 -out private.pem
-```
-
-To build,
-
-```sh
-npm run build
-```
-
-or 
+### Build/rebuild `wbn-bundle.js` from `src/index.ts` with `bun`
 
 ```
-bun run build
+bun build ./src/index.ts --target bun --format esm --outfile wbn-bundle.js -e cborg -e base32-encode --minify
 ```
 
-This will generate `dist/telnet.swbn`, a Web Bundle signed with the development
-key generated above.
-
-To install this bundle as an Isolated Web App, launch Chrome with the following
-flags,
-
-```sh
-google-chrome-unstable --enable-features=IsolatedWebApps,IsolatedWebAppDevMode \
-                       --install-isolated-web-app-from-file=$PWD/dist/telnet.swbn
-```
-
-If you visit `chrome://apps` you will see a new app called "Telnet".
-
-After installation you can remove the `--install-isolated-web-app-from-file`
-parameter from the command line.
-
-Note that flags must be provided on the command line when the browser first
-starts. Once it is running launching it from the command line will open a new
-window but command line flags will not take effect.
-
-### Local testing
-
-The `direct-sockets` folder contains [Deno](https://github.com/denoland/deno) `deno_echo_tcp.js`, [txiki.js](https://github.com/saghul/txiki.js) `txikijs_echo_tcp.js`, [Bun](https://github.com/oven-sh/bun) `bun_echo_tcp.js`, and [Node.js](https://github.com/nodejs/node) TCP servers `node_echo_tcp.js`.
-
-To test locally start the local TCP server of your choice then at `console` of the Telnet Client example, or in the signed Web Bundle code run something like this
+### Dynamically build/rebuild `wbn-bundle.js` from `src/index.ts` with `esbuild` and run
 
 ```
-var socket = new TCPSocket('0.0.0.0', '8000');
-var abortable = new AbortController();
-var {
-  signal
-} = abortable;
-var {
-  readable,
-  writable
-} = await socket.opened;
-var controller;
-socket.closed.then(() => console.log('Socket closed'))
-  .catch(() => console.warn('Socket error'));
-readable.pipeThrough(new TextDecoderStream()).pipeTo(
-    new WritableStream({
-      start(c) {
-        return controller = c;
-      },
-      write(value) {
-        console.log(value);
-      },
-      close() {
-        console.log('Socket closed');
-      },
-      abort(reason) {
-        console.log({
-          reason
-        });
-      }
-    }), {
-      signal
-    })
-  .then(() => console.log('pipeTo() Promise fulfilled'))
-  .catch(() => console.log('pipeTo() Promise error caught'));
+// import bundleIsolatedWebApp from "./wbn-bundle.js";
+import * as esbuild from "esbuild";
 
-var encoder = new TextEncoder();
-var enc = (text) => encoder.encode(text);
-var writer = writable.getWriter();
-writer.closed.then(() => console.log('writer closed'))
-  .catch(() => console.log('writer closed error'));
+// Deno-specific workaround for dynamic imports. 
+const dynamicImport = "./wbn-bundle.js";
 
-await writer.write(enc('live'));
-// For responses to be discrete when reading
-await new Promise((r) => setTimeout(r, 20));
-
-// Write to the TCP socket
-await writer.write(enc('Test DirectSockets'));
-// For responses to be discrete when reading
-await new Promise((r) => setTimeout(r, 20));
-
-// Close the WritableStreamDefaultWriter
-// This _does not_ close the TCP connection
-await writer.close().then(() => console.log('writer.close()'))
-.catch(() => console.log('writer.close() error'));
-
-// Close the TCP connection
-abortable.abort('Done testing DirectSockets');
-```
-
-To launch the IWA `window` from an arbitrary Web page in DevTools `console` or Snippets run the code in `/direct-sockets/direct-socket-controller.js`.
-
-Watch for the `open` event then run something like the following which should print the values echoed back in uppercase
-
-```
-for (let char of 'abcdefghijklmnopqrstuvwxyz') {
-  channel.send(encoder.encode(char));
-}
-```
-
-Or load the unpacked browser extension in `direct-sockets` directory and run `direct-socket-controller.js` in DevTols `console` or Snippets on any arbitrary Web page.
-
-```
-var encoder = new TextEncoder();
-var decoder = new TextDecoder();
-var {resolve, reject, promise} = Promise.withResolvers();
-await navigator.permissions.request({
-  name: "notifications",
-});
-new Notification("Open IWA, connect to TCP server?").onclick = async()=>{
-  resolve(showSaveFilePicker({
-    startIn: "downloads",
-    suggestedName: "direct-socket-controller.sdp",
-  }));
-}
-;
-var handle = await promise;
-var fso = new FileSystemObserver(async([{changedHandle, root, type}],record)=>{
-  try {
-    console.log(type);
-    fso.disconnect();
-    fso.unobserve(handle);
-    var text = atob(await (await handle.getFile()).text());
-    await local.setRemoteDescription({
-      type: "answer",
-      sdp: text,
-    });
-
-    await handle.remove();
-  } catch (e) {
-    console.warn(e);
-  }
-}
-,);
-
-fso.observe(handle);
-
-var local = new RTCPeerConnection({
-  sdpSemantics: "unified-plan",
-});
-["onsignalingstatechange", "oniceconnectionstatechange", "onicegatheringstatechange", ].forEach((e)=>local.addEventListener(e, console.log));
-
-local.onicecandidate = async(e)=>{
-  if (!e.candidate) {
-    local.localDescription.sdp = local.localDescription.sdp.replace(/actpass/, "active", );
-    if (local.localDescription.sdp.indexOf("a=end-of-candidates") === -1) {
-      local.localDescription.sdp += "a=end-of-candidates\r\n";
-    }
-    try {
-      console.log("sdp:", local.localDescription);
-      var w = open(`isolated-app://<ID>?sdp=${btoa(local.localDescription.sdp)}`, );
-    } catch (e) {
-      console.error(e);
-    }
-  }
-}
-;
-var channel = local.createDataChannel("transfer", {
-  negotiated: true,
-  ordered: true,
-  id: 0,
-  binaryType: "arraybuffer",
-  protocol: "tcp",
+await esbuild.build({
+  entryPoints: ["src/index.ts"],
+  platform: "node",
+  outfile: dynamicImport,
+  format: "esm",
+  packages: "external",
+  legalComments: "inline",
+  sourcemap: true,
+  bundle: true,
+  keepNames: true,
+  allowOverwrite: true,
 });
 
-channel.onopen = async(e)=>{
-  console.log(e.type);
-}
-;
-channel.onclose = async(e)=>{
-  console.log(e.type);
-}
-;
-channel.onclosing = async(e)=>{
-  console.log(e.type);
-}
-;
-channel.onmessage = async(e)=>{
-  // Do stuff with data
-  console.log(e.data);
-}
-;
-
-var offer = await local.createOffer({
-  voiceActivityDetection: false,
-});
-local.setLocalDescription(offer);
+// https://github.com/denoland/deno/issues/20945
+// "" + "/path" and "/path" + "": Deno-specific workaround to avoid module not found error
+ const { default: bundleIsolatedWebApp } = await import(dynamicImport);
 ```
 
-then
+## Installation of browser extension and Native Messaging host on Chrome and Chromium
+
+1. Navigate to `chrome://extensions`.
+2. Toggle `Developer mode`.
+3. Click `Load unpacked`.
+4. Select `direct-sockets` folder.
+5. Note the generated extension ID.
+6. Open `nm_tcpsocket.json` in a text editor, set `"path"` to absolute path of `bun_echo_tcp.js`, `deno_echo_tcp.js`, `node_echo_tcp.js`, or `txikijs_echo_tcp.js`, and set `"allowed_origins"` array value to `chrome-extension://<ID>/` using ID from 5 . 
+7. Copy the `nm_tcpsocket.json` file to Chrome or Chromium configuration folder, e.g., on Chromium on Linux `~/.config/chromium/NativeMessagingHosts`.
+8. Make sure the TCP echo server `*.js` file is executable.
+
+## TCP servers
+
+The `tcp-socket` folder contains [Deno](https://github.com/denoland/deno) `deno_echo_tcp.js`, [txiki.js](https://github.com/saghul/txiki.js) `txikijs_echo_tcp.js`, [Bun](https://github.com/oven-sh/bun) `bun_echo_tcp.js`, and [Node.js](https://github.com/nodejs/node) TCP servers `node_echo_tcp.js`.
+
+## Usage 
+To launch the IWA `window` from an arbitrary Web page run the code in `/direct-sockets/direct-socket-controller.js` in DevTools `console` or Snippets.
+
+Activate the notification which will prompt to save the generated WebRTC `RTCPeerConnection` SDP to the file `direct-socket-controller.sdp` in `Downloads` folder, click `Save`. Activate the second notification and select the `direct-socket-controller.sdp` file from `Downloads` folder. Click to save changes if prompted.
+
+The calling Web page will create a WebRTC Data Channel, and pass the SDP to the Isolated Web App in a new `window` using `open()`, then exchange SDP with a WebRTC Data Channel in the Isolated Web App to facilitate bi-directional communication between the arbitrary Web page and the IWA where a `TCPSocket` communicates with a local (or remote) TCP server.
+
+Watch for the `open` event of the WebRTC Data Channel connection between the IWA and the current Web page, then run something like the following which should print the values echoed back in uppercase
+
 
 ```
 channel.send(encoder.encode("live")); // "LIVE" in channel.onmessage handler
 ```
 
-The calling Web page will create a WebRTC Data Channel, and pass the SDP to the Isolated Web App in a new `window` using `open()`, then exchange SDP with a WebRTC Data Channel in the Isolated Web App to facilitate bi-directional communication between the arbitrary Web page and the IWA where a `TCPSocket` communicates with a local (or remote) TCP server.
+The `direct-sockets` browser extension starts one of the above local TCP servers specified in `nm_tcpsocket.json`.
 
-The `direct-sockets` browser extension starts one of the above local TCP servers specified in `nm_tcpsocket.json` using Native Messaging (see [NativeMessagingHosts](https://github.com/guest271314/MativeMessagingHosts) for how to install the host) when the IWA `window` is created.
+To close the TCP connection and the Isolated Web App `window` call `channel.close()`.
 
-[Direct Sockets API]: https://wicg.github.io/direct-sockets/
