@@ -64,6 +64,7 @@ onload = async () => {
             } catch (e) {
               console.log(e);
             }
+
             document.title = "TCPSocket";
             const { localAddress, localPort, remoteAddress, remotePort } =
               globalThis.stream;
@@ -136,4 +137,3 @@ onload = async () => {
   });
   await local.setLocalDescription(await local.createAnswer());
 };
-

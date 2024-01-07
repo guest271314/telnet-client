@@ -2,8 +2,8 @@
 
 Dynamically create an [Isolated Web App](https://github.com/WICG/isolated-web-apps/blob/main/README.md) to use [Direct Sockets API](https://wicg.github.io/direct-sockets/).
 
-- Use Web Cryptography API
-- Run same JavaScript source code in different JavaScript runtimes, e.g., `node`, `deno`, `bun`
+- Substitute Web Cryptography API ([wbn-sign-webcrypto](https://github.com/guest271314/wbn-sign-webcrypto)) for `node:crypto` implementation of Ed25519 algorithm 
+- Install and run same JavaScript source code in different JavaScript runtimes, e.g., `node`, `deno`, `bun`
 - TODO: Create Signed Web Bundle and Isolated Web App in the browser
 
 ## Building
@@ -91,13 +91,9 @@ await esbuild.build({
 3. Click `Load unpacked`.
 4. Select `direct-sockets` folder.
 5. Note the generated extension ID.
-6. Open `nm_tcpsocket.json` in a text editor, set `"path"` to absolute path of `bun_echo_tcp.js`, `deno_echo_tcp.js`, `node_echo_tcp.js`, or `txikijs_echo_tcp.js`, and set `"allowed_origins"` array value to `chrome-extension://<ID>/` using ID from 5 . 
+6. Open `nm_tcpsocket.json` in a text editor, set `"path"` to absolute path of [Deno](https://github.com/denoland/deno) `deno_echo_tcp.js`, [txiki.js](https://github.com/saghul/txiki.js) `txikijs_echo_tcp.js`, [Bun](https://github.com/oven-sh/bun) `bun_echo_tcp.js`, and [Node.js](https://github.com/nodejs/node) TCP servers `node_echo_tcp.js`, and set `"allowed_origins"` array value to `chrome-extension://<ID>/` using ID from 5 . 
 7. Copy the `nm_tcpsocket.json` file to Chrome or Chromium configuration folder, e.g., on Chromium on Linux `~/.config/chromium/NativeMessagingHosts`.
 8. Make sure the TCP echo server `*.js` file is executable.
-
-## TCP servers
-
-The `tcp-socket` folder contains [Deno](https://github.com/denoland/deno) `deno_echo_tcp.js`, [txiki.js](https://github.com/saghul/txiki.js) `txikijs_echo_tcp.js`, [Bun](https://github.com/oven-sh/bun) `bun_echo_tcp.js`, and [Node.js](https://github.com/nodejs/node) TCP servers `node_echo_tcp.js`.
 
 ## Usage 
 To launch the IWA `window` from an arbitrary Web page run the code in `/direct-sockets/direct-socket-controller.js` in DevTools `console` or Snippets.

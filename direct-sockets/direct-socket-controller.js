@@ -51,7 +51,7 @@ local.onicecandidate = async (e) => {
     try {
       console.log("sdp:", local.localDescription);
       var w = open(
-        `isolated-app://<ID>?sdp=${
+        `IWA_URL?sdp=${
           btoa(local.localDescription.sdp)
         }`,
       );

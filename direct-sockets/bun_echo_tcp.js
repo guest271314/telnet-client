@@ -1,4 +1,4 @@
-#!/usr/bin/env -S ./bun run
+#!/usr/bin/env -S bun run
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 

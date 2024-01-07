@@ -1,11 +1,11 @@
-/**
- * Copyright 2020 Google LLC
+/*!
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-module.exports = {
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        "google"
-    ],
-    "rules": {
-        "@typescript-eslint/no-explicit-any": "off",
-    },
-    "env": {
-        "browser": true,
-        "es6": true
-    },
-    "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
-  }
+// These must match with the types in `wbn`.
+// github.com/WICG/webpackage/blob/main/js/bundle/src/constants.ts
+const B1 = "b1";
+const B2 = "b2";
+const APPROVED_VERSIONS = [B1, B2] as const;
+export type FormatVersion = typeof APPROVED_VERSIONS[number];
