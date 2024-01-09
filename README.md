@@ -62,7 +62,25 @@ deno run --unstable-byonm -A index.js
 ### Build/rebuild `wbn-bundle.js` from `src/index.ts` with `bun`
 
 ```
-bun build ./src/index.ts --target bun --format esm --outfile wbn-bundle.js -e cborg -e base32-encode --minify
+try {
+  console.log(
+    await Bun.build({
+      entrypoints: ["./src/index.ts"],
+      outdir: ".",
+      sourcemap: "external",
+      splitting: false,
+      target: "bun" // or "node"
+      format: "esm",
+      // minify: true,
+      external: ["mime", "base32-encode", "wbn-sign-webcrypto", "wbn"],
+      naming: {
+        entry: "[dir]/wbn-bundle.[ext]",
+      },
+    }),
+  );
+} catch (e) {
+  console.log(e);
+}
 ```
 
 ### Dynamically build/rebuild `wbn-bundle.js` from `src/index.ts` with `esbuild` and run
