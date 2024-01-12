@@ -1,4 +1,6 @@
 onload = async () => {
+  const USER_AGENT = "";
+  console.log(USER_AGENT);
   const permission = await navigator.permissions.request({
     name: "notifications",
   });
