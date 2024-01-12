@@ -7,7 +7,8 @@ import * as crypto from "node:crypto";
 const { webcrypto } = crypto;
 const algorithm = { name: "Ed25519" };
 const decoder = new TextDecoder();
-const script = fs.readFileSync("./direct-sockets/direct-socket-controller.js");
+const controller = fs.readFileSync("./direct-sockets/direct-socket-controller.js");
+const script = fs.readFileSync("./assets/script.js");
 const privateKey = fs.readFileSync("./privateKey.json");
 const publicKey = fs.readFileSync("./publicKey.json");
 // https://github.com/tQsW/webcrypto-curve25519/blob/master/explainer.md
@@ -32,7 +33,21 @@ const isolatedWebAppURL = await new WebBundleId(
     cryptoKey.publicKey,
   ).serializeWithIsolatedWebAppOrigin();
 
-fs.writeFileSync("./direct-sockets/direct-socket-controller.js", decoder.decode(script).replace("IWA_URL", `isolated-app://${new URL(isolatedWebAppURL).hostname}`));
+fs.writeFileSync(
+  "./direct-sockets/direct-socket-controller.js", 
+  decoder.decode(controller).replace(
+    "IWA_URL", 
+    `isolated-app://${new URL(isolatedWebAppURL).hostname}`
+  )
+);
+
+fs.writeFileSync(
+  "./assets/script.js",
+  decoder.decode(script).replace(
+     /USER_AGENT\s=\s"?.+"/g,
+    `USER_AGENT = "Built with ${navigator.userAgent}"`,
+  ),
+);
 
 const { fileName, source } = await bundleIsolatedWebApp({
   baseURL: isolatedWebAppURL,
