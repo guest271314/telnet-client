@@ -1,4 +1,4 @@
-globalThis.Buffer ??= (await import("node:buffer")).Buffer;
+globalThis.Buffer ??= (await import("node:buffer")).Buffer; // For Deno
 import bundleIsolatedWebApp from "./wbn-bundle.js";
 import { WebBundleId } from "wbn-sign-webcrypto";
 import * as fs from "node:fs";
