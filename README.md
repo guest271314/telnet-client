@@ -30,7 +30,7 @@ deno run -A deno_install.js
 
 ### Generate private and public keys, write to file system 
 
-This only has to be done once.
+This only has to be done once. `generateWebCryptoKeys.js` can be run with `node`, `deno`, or `bun`.
 
 ```
 node --experimental-default-type=module generateWebCryptoKeys.js
