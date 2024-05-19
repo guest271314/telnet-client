@@ -124,6 +124,14 @@ await esbuild.build({
 ## Usage 
 To launch the IWA `window` from an arbitrary Web page run the code in `/direct-sockets/direct-socket-controller.js` in DevTools `console` or Snippets.
 
+We could recently open the IWA `window` from arbitrary Web sites in DevTools `console` or Snippets with 
+
+```
+var iwa = open("isolated-app://<IWA_ID>");
+```
+
+[iwa: Mark isolated-app: as being handled by Chrome](https://chromium-review.googlesource.com/c/chromium/src/+/5466063) evidently had the side effect of blocking that capability, see [window.open("isolated-app://<ID>") is blocked](https://issues.chromium.org/issues/339994757#comment6). [isolated-web-app-utilities](https://github.com/guest271314/isolated-web-app-utilities) provides approaches to open the IWA window from arbitrary Web sites, `chrome:`, `chrome-extension:` URL's.
+
 Activate the notification which will prompt to save the generated WebRTC `RTCPeerConnection` SDP to the file `direct-socket-controller.sdp` in `Downloads` folder, click `Save`. Activate the second notification and select the `direct-socket-controller.sdp` file from `Downloads` folder. Click to save changes if prompted.
 
 The calling Web page will create a WebRTC Data Channel, and pass the SDP to the Isolated Web App in a new `window` using `open()`, then exchange SDP with a WebRTC Data Channel in the Isolated Web App to facilitate bi-directional communication between the arbitrary Web page and the IWA where a `TCPSocket` communicates with a local (or remote) TCP server.
