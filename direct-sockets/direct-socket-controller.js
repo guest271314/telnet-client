@@ -12,6 +12,7 @@ await navigator.permissions.request({
 });
 new Notification("Open IWA, connect to TCP server?").onclick = async()=>{
   resolve(showSaveFilePicker({
+    id: "tcp-socket",
     startIn: "downloads",
     suggestedName: "direct-socket-controller.sdp",
   }));
