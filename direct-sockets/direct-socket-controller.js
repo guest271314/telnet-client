@@ -58,8 +58,8 @@ local.onicecandidate = async(e)=>{
       );
       */
       const params = new URLSearchParams();
-      params.append("name", "Signed Web Bundle in Isolated Web App");
-      params.append("sdp", btoa(local.localDescription.sdp));
+      params.set("sdp", btoa(local.localDescription.sdp));
+      params.set("name", "Signed Web Bundle in Isolated Web App");
       if (globalThis?.openIsolatedWebApp) {
         openIsolatedWebApp(`?${params.toString()}`);
       } else {
