@@ -39,6 +39,7 @@ onload = async () => {
         new Notification("IWA: Save SDP for WebRTC Data Channel")
           .onclick = async () => {
             [globalThis.handle] = await showOpenFilePicker({
+              id: "tcp-socket",
               types: [
                 {
                   description: "SDP",
