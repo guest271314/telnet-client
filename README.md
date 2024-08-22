@@ -22,12 +22,6 @@ or
 npm install
 ```
 
-or 
-
-```
-deno run -A deno_install.js
-```
-
 ### Generate private and public keys, write to file system 
 
 This only has to be done once. `generateWebCryptoKeys.js` can be run with `node`, `deno`, or `bun`.
@@ -53,10 +47,10 @@ or
 npm install
 ```
 
-#### Dynamically fetch dependencies and create `node_module` folder and create the `.swbn` file and IWA
+### Dynamically fetch dependencies and create `node_module` folder and create the `.swbn` file and IWA
 
 ```
-deno run -A --import-map=import-map.json index.js
+deno run -A --import-map=import-map.json --unstable-byonm index.js
 ```
 
 ### Build/rebuild `wbn-bundle.js` from `webbundle-plugins/packages/rollup-plugin-webbundle/src/index.ts` with `bun`
