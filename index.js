@@ -5,7 +5,7 @@ import { webcrypto } from "node:crypto";
 import * as path from "node:path";
 const algorithm = { name: "Ed25519" };
 const decoder = new TextDecoder();
-const controller = freadFileSync("./direct-sockets/direct-socket-controller.js");
+const controller = readFileSync("./direct-sockets/direct-socket-controller.js");
 const script = readFileSync("./assets/script.js");
 const privateKey = readFileSync("./privateKey.json");
 const publicKey = readFileSync("./publicKey.json");
