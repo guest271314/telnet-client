@@ -35,7 +35,7 @@ const isolatedWebAppURL = await new WebBundleId(
     cryptoKey.publicKey,
   ).serializeWithIsolatedWebAppOrigin();
 
-fs.writeFileSync(
+writeFileSync(
   "./direct-sockets/direct-socket-controller.js", 
   decoder.decode(controller).replace(
     "IWA_URL", 
@@ -43,7 +43,7 @@ fs.writeFileSync(
   )
 );
 
-fs.writeFileSync(
+writeFileSync(
   "./assets/script.js",
   decoder.decode(script).replace(
      /USER_AGENT\s=\s"?.+"/g,
