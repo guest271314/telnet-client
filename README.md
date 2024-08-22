@@ -43,72 +43,37 @@ Entry point is `assets` directory; contains `manifest.webmanifest`, `index.html`
 
 Write `signed.swbn` to current directory, and write the generated Signed Web Bundle `isolated-app:` ID to `direct-socket-controller.js` in `direct-sockets` extension folder.
 
-Node.js 
 ```
-node --experimental-default-type=module index.js
-```
-
-Bun
-```
-bun run index.js
+bun install
 ```
 
-Deno
-```
-deno run --unstable-byonm -A index.js
-```
-
-
-### Build/rebuild `wbn-bundle.js` from `src/index.ts` with `bun`
+or 
 
 ```
-try {
-  console.log(
-    await Bun.build({
-      entrypoints: ["./src/index.ts"],
-      outdir: ".",
-      sourcemap: "external",
-      splitting: false,
-      target: "bun" // or "node"
-      format: "esm",
-      // minify: true,
-      external: ["mime", "base32-encode", "wbn-sign-webcrypto", "wbn"],
-      naming: {
-        entry: "[dir]/wbn-bundle.[ext]",
-      },
-    }),
-  );
-} catch (e) {
-  console.log(e);
-}
+npm install
 ```
 
-### Dynamically build/rebuild `wbn-bundle.js` from `src/index.ts` with `esbuild` and run
+#### Dynamically fetch dependencies and create `node_module` folder and create the `.swbn` file and IWA
 
 ```
-// import bundleIsolatedWebApp from "./wbn-bundle.js";
-import * as esbuild from "esbuild";
-
-// Deno-specific workaround for dynamic imports. 
-const dynamicImport = "./wbn-bundle.js";
-
-await esbuild.build({
-  entryPoints: ["src/index.ts"],
-  platform: "node",
-  outfile: dynamicImport,
-  format: "esm",
-  packages: "external",
-  legalComments: "inline",
-  sourcemap: true,
-  bundle: true,
-  keepNames: true,
-  allowOverwrite: true,
-});
-
-// https://github.com/denoland/deno/issues/20945
-// "" + "/path" and "/path" + "": Deno-specific workaround to avoid module not found error
- const { default: bundleIsolatedWebApp } = await import(dynamicImport);
+deno run -A --import-map=import-map.json index.js
 ```
+
+### Build/rebuild `wbn-bundle.js` from `webbundle-plugins/packages/rollup-plugin-webbundle/src/index.ts` with `bun`
+
+
+1. `git clone https://github.com/GoogleChromeLabs/webbundle-plugins`
+2. `cd webbundle-plugins/packages/rollup-plugin-webbundle`
+3. `bun install -p`
+4. In `src/index.ts` comment line 18, `: EnforcedPlugin`, line 32 `const opts = await getValidatedOptionsWithDefaults(rawOpts);` and lines 65-121, because I will not be using Rollup
+5. Bundle with Bun `bun build --target=node --format=esm --sourcemap=none --outfile=webpackage-bundle.js ./webbundle-plugins/packages/rollup-plugin-webbundle/src/index.ts`
+6. Create reference to Web Cryptography API that will be used in the code in the bundled script instead of `node:crypto` directly `import { webcrypto } from "node:crypto";`
+7. In `/node_modules/wbn-sign/lib/utils/utils.js` use `switch (key.algorithm.name) {`
+8. `getRawPublicKey` becomes an `async` function for substituting `const exportedKey = await webcrypto.subtle.exportKey("spki", publicKey);` for `publicKey.export({ type: "spki", format: "der" });`
+9. In `/node_modules/wbn-sign/lib/signers/integrity-block-signer.js` use `const publicKey = await signingStrategy.getPublicKey();` and `[getPublicKeyAttributeName(publicKey)]: await getRawPublicKey(publicKey)`; `verifySignature()` also becomes an `async` function where `const algorithm = { name: "Ed25519" }; const isVerified = await webcrypto.subtle.verify(algorithm, publicKey, signature, data);` is substituted for `const isVerified = crypto2.verify(undefined, data, publicKey, signature);`
+10. In `/node_modules/wbn-sign/lib/web-bundle-id.js` `serialize()` function becomes `async` for `return base32Encode(new Uint8Array([...await getRawPublicKey(this.key), ...this.typeSuffix]), "RFC4648", { padding: false }).toLowerCase();`; and `serializeWithIsolatedWebAppOrigin()` becomes an `async` function for `return ${this.scheme}${await this.serialize()}/;`; `toString()` becomes an `async` function for `return Web Bundle ID: ${await this.serialize()} Isolated Web App Origin: ${await this.serializeWithIsolatedWebAppOrigin()};`
+11. In `src/index.ts` `export {WebBundleId, bundleIsolatedWebApp};`
+12. In `index.js`, the entry point for how I am creating the SWBN and IWA I get the public and private keys created with Web Cryptography API, and use Web Cryptography API to sign and verify
 
 ## Installation of browser extension and Native Messaging host on Chrome and Chromium
 
