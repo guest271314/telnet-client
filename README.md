@@ -37,14 +37,18 @@ Entry point is `assets` directory; contains `manifest.webmanifest`, `index.html`
 
 Write `signed.swbn` to current directory, and write the generated Signed Web Bundle `isolated-app:` ID to `direct-socket-controller.js` in `direct-sockets` extension folder.
 
-```
-bun install
-```
-
-or 
+Node.js
 
 ```
-npm install
+node --experimental-default-type=module index.js
+```
+Bun
+```
+bun run index.js
+```
+Deno
+```
+deno run -A index.js
 ```
 
 ### Dynamically fetch dependencies and create `node_module` folder and create the `.swbn` file and IWA
