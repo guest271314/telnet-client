@@ -10,6 +10,6 @@
   "dependencies": {
     "wbn": "^0.0.9",
     "base32-encode": "^2.0.0",
-    "mime": "^2.6.0"
+    "mime": "^4.0.4"
   }
 }
