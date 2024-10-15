@@ -54,13 +54,7 @@ bun run index.js
 ```
 Deno
 ```
- deno -A --unstable-byonm index.js
-```
-
-### Dynamically fetch dependencies and create `node_module` folder and create the `.swbn` file and IWA
-
-```
-deno -A --import-map=import-map.json --unstable-byonm index.js
+ deno -A --import-map import-map index.js
 ```
 
 ### Build/rebuild `wbn-bundle.js` from `webbundle-plugins/packages/rollup-plugin-webbundle/src/index.ts` with `bun`
