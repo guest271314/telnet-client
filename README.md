@@ -46,13 +46,13 @@ Write `signed.swbn` to current directory, and write the generated Signed Web Bun
 Node.js
 
 ```
-node --experimental-default-type=module index.js
+node index.js
 ```
 Bun
 ```
 bun run index.js
 ```
-Deno
+Deno (Can be run without `node_modules` folder in current directory; fetches dependencies from https://esm.sh)
 ```
  deno -A --import-map import-map index.js
 ```
